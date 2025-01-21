@@ -4,8 +4,10 @@
  */
 package Model;
 
+import java.io.File;
 import javafx.scene.Scene;
 import javafx.scene.control.skin.TextInputControlSkin;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 
@@ -22,9 +24,10 @@ public class Player {
     private double velocityX, velocityY;
     private double speed;
     private boolean dead = false;
+    private String facingDirection = "RIGHT"; 
 
-    public Player(ImageView spriteView, int health, int lives, double x, double y, double speed) {
-        this.spriteView = spriteView;
+    public Player(String imagePath, int health, int lives, double x, double y, double speed) {
+        this.spriteView = new ImageView(new Image(new File(imagePath).toURI().toString()));
         this.health = health;
         this.lives = lives;
         this.x = x;
@@ -141,6 +144,14 @@ public class Player {
         if (newY >= 0 && newY <= scene.getHeight() - this.spriteView.getFitHeight()) {
             this.spriteView.setY(newY);
         }
+    }
+    
+    public String getFacingDirection() {
+        return facingDirection;
+    }
+
+    public void setFacingDirection(String facingDirection) {
+        this.facingDirection = facingDirection;
     }
     
     public void shoot(){
