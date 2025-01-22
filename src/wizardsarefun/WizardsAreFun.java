@@ -4,18 +4,16 @@
  */
 package wizardsarefun;
 
+import Controller.Logica;
+import Model.Enemy;
 import Model.Player;
 import Model.Projectile;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -28,82 +26,30 @@ public class WizardsAreFun extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         
-        // Player 1 Object Creation
-        Player player1 = new Player("src/Media/wizzard_m_idle_anim_f0.png", 
-                100, 3, 50, 50, 2);
-        player1.getSpriteView().setX(50);
-        player1.getSpriteView().setY(50);
-        player1.getSpriteView().setFitHeight(42); //original 28
-        player1.getSpriteView().setFitWidth(24); //original 16
-        
         List<Projectile> projectiles = new ArrayList<>();
-        String[] fireballFrames = {
-            "src/Media/Fireball/fireball001.png",
-            "src/Media/Fireball/fireball002.png",
-            "src/Media/Fireball/fireball003.png",
-            "src/Media/Fireball/fireball004.png",
-            "src/Media/Fireball/fireball005.png",
-            "src/Media/Fireball/fireball006.png",
-            "src/Media/Fireball/fireball007.png",
-            "src/Media/Fireball/fireball008.png",
-            "src/Media/Fireball/fireball009.png",
-            "src/Media/Fireball/fireball010.png",
-            "src/Media/Fireball/fireball011.png",
-            "src/Media/Fireball/fireball012.png",
-            "src/Media/Fireball/fireball013.png",
-            "src/Media/Fireball/fireball014.png",
-            "src/Media/Fireball/fireball015.png",
-            "src/Media/Fireball/fireball016.png",
-            "src/Media/Fireball/fireball017.png",
-            "src/Media/Fireball/fireball018.png",
-            "src/Media/Fireball/fireball019.png",
-            "src/Media/Fireball/fireball020.png",
-            "src/Media/Fireball/fireball021.png",
-            "src/Media/Fireball/fireball022.png",
-            "src/Media/Fireball/fireball023.png",
-            "src/Media/Fireball/fireball024.png",
-            "src/Media/Fireball/fireball025.png",
-            "src/Media/Fireball/fireball026.png",
-            "src/Media/Fireball/fireball027.png",
-            "src/Media/Fireball/fireball028.png",
-            "src/Media/Fireball/fireball029.png",
-            "src/Media/Fireball/fireball030.png",
-            "src/Media/Fireball/fireball031.png",
-            "src/Media/Fireball/fireball032.png",
-            "src/Media/Fireball/fireball033.png",
-            "src/Media/Fireball/fireball034.png",
-            "src/Media/Fireball/fireball035.png",
-            "src/Media/Fireball/fireball036.png",
-            "src/Media/Fireball/fireball037.png",
-            "src/Media/Fireball/fireball038.png",
-            "src/Media/Fireball/fireball039.png",
-            "src/Media/Fireball/fireball040.png",
-            "src/Media/Fireball/fireball041.png",
-            "src/Media/Fireball/fireball042.png",
-            "src/Media/Fireball/fireball043.png",
-            "src/Media/Fireball/fireball044.png",
-            "src/Media/Fireball/fireball045.png",
-            "src/Media/Fireball/fireball046.png",
-            "src/Media/Fireball/fireball047.png",
-            "src/Media/Fireball/fireball048.png",
-            "src/Media/Fireball/fireball049.png",
-            "src/Media/Fireball/fireball050.png",
-            "src/Media/Fireball/fireball051.png",
-            "src/Media/Fireball/fireball052.png",
-            "src/Media/Fireball/fireball053.png",
-            "src/Media/Fireball/fireball054.png",
-            "src/Media/Fireball/fireball055.png",
-            "src/Media/Fireball/fireball056.png",
-            "src/Media/Fireball/fireball057.png",
-            "src/Media/Fireball/fireball058.png",
-            "src/Media/Fireball/fireball059.png",
-            "src/Media/Fireball/fireball060.png",
-            };
+        List<Enemy> enemies = new ArrayList<>();
+        
+        Logica logica = new Logica();
+        
+        // Player 1 Object Creation
+        Player player1 = new Player(logica.getCharacterAIdleUP(), logica.getCharacterAIdleDOWN(), 
+                logica.getCharacterAIdleLEFT(), logica.getCharacterAIdleRIGHT(), logica.getCharacterAWalkUP(), 
+                logica.getCharacterAWalkDOWN(), logica.getCharacterAWalkLEFT(), logica.getCharacterAWalkRIGHT(),
+                100, 3, 225, 225, 2);
+        player1.getSpriteView().setX(player1.getX());
+        player1.getSpriteView().setY(player1.getY());
+        player1.getSpriteView().setFitHeight(48); //original 28
+        player1.getSpriteView().setFitWidth(48); //original 16
+        
+        // Target Dummy Creation
+        Enemy enemy1 = new Enemy(logica.getEnemy1WalkUP(), logica.getEnemy1WalkDOWN(), logica.getEnemy1WalkSIDES(),
+                logica.getEnemy1DieUP(), logica.getEnemy1DieDOWN(), logica.getEnemy1DieSIDES(), 290, 225, 1, 0.5);
+        enemies.add(enemy1);
         
         Group root = new Group();
-        root.getChildren().addAll(player1.getSpriteView());    
+        root.getChildren().addAll(player1.getSpriteView(), enemy1.getSpriteView());    
         
-        Scene scene = new Scene(root, 500, 500, Color.BISQUE);
+        Scene scene = new Scene(root, 500, 500, Color.DIMGREY);
                 
         // Player1 movement
         scene.setOnKeyPressed(event -> {
@@ -127,7 +73,7 @@ public class WizardsAreFun extends Application {
                 case SPACE:
                     double startX = player1.getSpriteView().getX();
                     double startY = player1.getSpriteView().getY();
-                    Projectile projectile = new Projectile(startX, startY, player1.getFacingDirection(), fireballFrames);
+                    Projectile projectile = new Projectile(startX, startY, player1.getFacingDirection(), logica.getFireballFrames());
                     root.getChildren().add(projectile.getSprite());
                     projectiles.add(projectile);
                     break;
@@ -157,6 +103,23 @@ public class WizardsAreFun extends Application {
                         root.getChildren().remove(p.getSprite());
                         projectiles.remove(i);
                         i--; // Adjust index after removal
+                    }
+                }
+                
+                // Move enemies toward player
+                for (Enemy enemy : enemies) {
+                    enemy.moveTowardPlayer(player1, scene); // Chasing behavior
+                }
+                
+                // Damage and Collision handling
+                for (Projectile projectile : projectiles) {
+                    for (Enemy enemy : enemies) {
+                        if (projectile.getSprite().getBoundsInParent().intersects(enemy.getSpriteView().getBoundsInParent())) {
+                            enemy.takeDamage(1); // Apply damage
+                            root.getChildren().remove(projectile.getSprite()); // Remove projectile
+                            projectiles.remove(projectile);
+                            break;
+                        }
                     }
                 }
             }

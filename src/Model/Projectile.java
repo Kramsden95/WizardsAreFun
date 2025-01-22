@@ -22,7 +22,8 @@ public class Projectile {
     private Timeline animationTimeline;
     private double velocityX;
     private double velocityY;
-    private double speed = 8;
+    private double speed = 3;
+    private int currentFrameIndex = 0;
 
     public Projectile(double startX, double startY, String facingDirection, String[] animationPaths) {
         sprite = new ImageView(new Image(new File(animationPaths[0]).toURI().toString()));
@@ -47,9 +48,9 @@ public class Projectile {
 
         // Set up animation
         animationTimeline = new Timeline(
-            new KeyFrame(Duration.millis(50), event -> {
-                int currentFrame = (int) ((sprite.getImage().hashCode() % animationFrames.length));
-                sprite.setImage(animationFrames[currentFrame]);
+            new KeyFrame(Duration.millis(20), event -> {
+                currentFrameIndex = (int) ((currentFrameIndex + 1) % animationFrames.length);
+                sprite.setImage(animationFrames[currentFrameIndex]);
             })
         );
         animationTimeline.setCycleCount(Timeline.INDEFINITE);

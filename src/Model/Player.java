@@ -5,34 +5,102 @@
 package Model;
 
 import java.io.File;
+import java.util.Map;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.scene.Scene;
-import javafx.scene.control.skin.TextInputControlSkin;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
+import javafx.util.Duration;
 
 /**
  *
  * @author Kane
  */
 public class Player {
-    private String playerName;
     private ImageView spriteView;
     private int health;
     private int lives;
     private double x, y;
-    private double velocityX, velocityY;
     private double speed;
-    private boolean dead = false;
-    private String facingDirection = "RIGHT"; 
 
-    public Player(String imagePath, int health, int lives, double x, double y, double speed) {
-        this.spriteView = new ImageView(new Image(new File(imagePath).toURI().toString()));
+    private String playerName;
+    private boolean dead = false;
+    private double velocityX, velocityY;    
+    private String facingDirection = "DOWN"; 
+    private String state = "IDLE";
+    private int currentFrameIndex = 0;
+    
+    private Timeline animationTimeline;
+    private Map<String, Image[]> idleAnimations;
+    private Map<String, Image[]> walkingAnimations;
+    
+    public Player(String[] upIdleFrames, String[] downIdleFrames, String[] leftIdleFrames, String[] rightIdleFrames,
+            String[] upWalkFrames, String[] downWalkFrames, String[] leftWalkFrames, String[] rightWalkFrames,
+            int health, int lives, double x, double y, double speed) {
+        this.spriteView = new ImageView(new Image(new File(downIdleFrames[0]).toURI().toString()));
         this.health = health;
         this.lives = lives;
         this.x = x;
         this.y = y;
         this.speed = speed;
+        
+        // Load animation frames
+        idleAnimations = Map.of(
+            "UP", new Image[] {
+                new Image(new File(upIdleFrames[0]).toURI().toString()),
+                new Image(new File(upIdleFrames[1]).toURI().toString()),
+                new Image(new File(upIdleFrames[2]).toURI().toString()),
+                new Image(new File(upIdleFrames[3]).toURI().toString())
+            },
+            "DOWN", new Image[] {
+                new Image(new File(downIdleFrames[0]).toURI().toString()),
+                new Image(new File(downIdleFrames[1]).toURI().toString()),
+                new Image(new File(downIdleFrames[2]).toURI().toString()),
+                new Image(new File(downIdleFrames[3]).toURI().toString())
+            },
+            "LEFT", new Image[] {
+                new Image(new File(leftIdleFrames[0]).toURI().toString()),
+                new Image(new File(leftIdleFrames[1]).toURI().toString()),
+                new Image(new File(leftIdleFrames[2]).toURI().toString()),
+                new Image(new File(leftIdleFrames[3]).toURI().toString())
+            },
+            "RIGHT", new Image[] {
+                new Image(new File(rightIdleFrames[0]).toURI().toString()),
+                new Image(new File(rightIdleFrames[1]).toURI().toString()),
+                new Image(new File(rightIdleFrames[2]).toURI().toString()),
+                new Image(new File(rightIdleFrames[3]).toURI().toString())
+            }
+        );
+        
+        walkingAnimations = Map.of(
+            "UP", new Image[] {
+                new Image(new File(upWalkFrames[0]).toURI().toString()),
+                new Image(new File(upWalkFrames[1]).toURI().toString()),
+                new Image(new File(upWalkFrames[2]).toURI().toString()),
+                new Image(new File(upWalkFrames[3]).toURI().toString())
+            },
+            "DOWN", new Image[] {
+                new Image(new File(downWalkFrames[0]).toURI().toString()),
+                new Image(new File(downWalkFrames[1]).toURI().toString()),
+                new Image(new File(downWalkFrames[2]).toURI().toString()),
+                new Image(new File(downWalkFrames[3]).toURI().toString())
+            },
+            "LEFT", new Image[] {
+                new Image(new File(leftWalkFrames[0]).toURI().toString()),
+                new Image(new File(leftWalkFrames[1]).toURI().toString()),
+                new Image(new File(leftWalkFrames[2]).toURI().toString()),
+                new Image(new File(leftWalkFrames[3]).toURI().toString())
+            },
+            "RIGHT", new Image[] {
+                new Image(new File(rightWalkFrames[0]).toURI().toString()),
+                new Image(new File(rightWalkFrames[1]).toURI().toString()),
+                new Image(new File(rightWalkFrames[2]).toURI().toString()),
+                new Image(new File(rightWalkFrames[3]).toURI().toString())
+            }
+        );
+        
+        startAnimation();
     }
 
     public ImageView getSpriteView() {
@@ -97,6 +165,7 @@ public class Player {
 
     public void setVelocityX(double velocityX) {
         this.velocityX = velocityX;
+        updateState();
     }
 
     public double getVelocityY() {
@@ -105,6 +174,7 @@ public class Player {
 
     public void setVelocityY(double velocityY) {
         this.velocityY = velocityY;
+        updateState();
     }
 
     public String getPlayerName() {
@@ -115,7 +185,7 @@ public class Player {
         this.playerName = playerName;
     }
 
-    public void move(String direction, Scene scene) {
+    /*public void move(String direction, Scene scene) {
         switch (direction) {
             case "UP":
                 if (this.spriteView.getY() > 0) this.spriteView.setY(this.spriteView.getY() - this.speed);
@@ -130,7 +200,7 @@ public class Player {
                 if (this.spriteView.getX() < scene.getWidth() - this.spriteView.getFitWidth()) this.spriteView.setX(this.spriteView.getX() + this.speed);
                 break;
         }
-    }
+    }*/
     
     public void updatePosition(Scene scene) {
         // Update X position and check boundaries
@@ -146,12 +216,37 @@ public class Player {
         }
     }
     
+    private void updateState() {
+        // Determine if the player is moving
+        if (velocityX == 0 && velocityY == 0) {
+            state = "IDLE";
+        } else {
+            state = "WALKING";
+        }
+    }
+    
+    private void startAnimation() {
+        animationTimeline = new Timeline(
+            new KeyFrame(Duration.millis(150), event -> {
+                Image[] frames = state.equals("IDLE") ?
+                    idleAnimations.get(facingDirection) :
+                    walkingAnimations.get(facingDirection);
+
+                currentFrameIndex = (int) ((currentFrameIndex + 1) % frames.length);
+                spriteView.setImage(frames[currentFrameIndex]);
+            })
+        );
+        animationTimeline.setCycleCount(Timeline.INDEFINITE);
+        animationTimeline.play();
+    }
+    
     public String getFacingDirection() {
         return facingDirection;
     }
 
     public void setFacingDirection(String facingDirection) {
         this.facingDirection = facingDirection;
+        updateState();
     }
     
     public void shoot(){
