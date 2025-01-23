@@ -10,6 +10,7 @@ import javafx.animation.Timeline;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
 /**
@@ -24,6 +25,8 @@ public class Projectile {
     private double velocityY;
     private double speed = 3;
     private int currentFrameIndex = 0;
+    
+    private Circle hitbox;
 
     public Projectile(double startX, double startY, String facingDirection, String[] animationPaths) {
         sprite = new ImageView(new Image(new File(animationPaths[0]).toURI().toString()));
@@ -31,6 +34,9 @@ public class Projectile {
         sprite.setY(startY);
         sprite.setFitWidth(50); 
         sprite.setFitHeight(50);
+        
+        // Create a hitbox (e.g., radius 15)
+        hitbox = new Circle(startX + sprite.getFitWidth() / 2, startY + sprite.getFitHeight() / 2, 15);
         
         // Load animation frames
         Image[] animationFrames = new Image[animationPaths.length];
@@ -60,10 +66,18 @@ public class Projectile {
     public ImageView getSprite() {
         return sprite;
     }
+    
+    public Circle getHitbox() {
+        return hitbox;
+    }
 
     public void move() {
         sprite.setX(sprite.getX() + velocityX);
         sprite.setY(sprite.getY() + velocityY);
+        
+        // Update the hitbox position to match the sprite
+        hitbox.setCenterX(sprite.getX() + sprite.getFitWidth() / 2);
+        hitbox.setCenterY(sprite.getY() + sprite.getFitHeight() / 2);
     }
 
     public boolean isOutOfBounds(Scene scene) {

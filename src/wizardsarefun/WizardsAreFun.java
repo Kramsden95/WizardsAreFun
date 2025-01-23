@@ -4,17 +4,21 @@
  */
 package wizardsarefun;
 
+import Controller.GameManager;
 import Controller.Logica;
 import Model.Enemy;
 import Model.Player;
 import Model.Projectile;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 /**
@@ -25,9 +29,9 @@ public class WizardsAreFun extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
-        
-        List<Projectile> projectiles = new ArrayList<>();
-        List<Enemy> enemies = new ArrayList<>();
+        Group root = new Group();
+        Scene scene = new Scene(root, 500, 500, Color.DIMGREY);
+        GameManager gameManager = new GameManager(root, scene);
         
         Logica logica = new Logica();
         
@@ -43,14 +47,14 @@ public class WizardsAreFun extends Application {
         
         // Target Dummy Creation
         Enemy enemy1 = new Enemy(logica.getEnemy1WalkUP(), logica.getEnemy1WalkDOWN(), logica.getEnemy1WalkSIDES(),
-                logica.getEnemy1DieUP(), logica.getEnemy1DieDOWN(), logica.getEnemy1DieSIDES(), 290, 225, 1, 0.5);
-        enemies.add(enemy1);
+                logica.getEnemy1DieUP(), logica.getEnemy1DieDOWN(), logica.getEnemy1DieSIDES(), 290, 225, 1, 0.5, gameManager);
+        gameManager.addEnemy(enemy1);
         
-        Group root = new Group();
-        root.getChildren().addAll(player1.getSpriteView(), enemy1.getSpriteView());    
-        
-        Scene scene = new Scene(root, 500, 500, Color.DIMGREY);
+        DropShadow ds = new DropShadow(5, Color.AQUA);
+        enemy1.getSpriteView().setEffect(ds);
                 
+        root.getChildren().addAll(player1.getSpriteView());    
+        
         // Player1 movement
         scene.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -74,11 +78,32 @@ public class WizardsAreFun extends Application {
                     double startX = player1.getSpriteView().getX();
                     double startY = player1.getSpriteView().getY();
                     Projectile projectile = new Projectile(startX, startY, player1.getFacingDirection(), logica.getFireballFrames());
-                    root.getChildren().add(projectile.getSprite());
-                    projectiles.add(projectile);
+                    projectile.getSprite().setEffect(ds);
+                    
+                                    /*Rectangle projectileBounds = new Rectangle(
+                                        projectile.getSprite().getBoundsInParent().getMinX(),
+                                        projectile.getSprite().getBoundsInParent().getMinY(),
+                                        projectile.getSprite().getBoundsInParent().getWidth(),
+                                        projectile.getSprite().getBoundsInParent().getHeight()
+                                    );
+                                    projectileBounds.setStroke(Color.RED);
+                                    projectileBounds.setFill(Color.TRANSPARENT);
+                                    root.getChildren().add(projectileBounds);*/
+                    
+                    gameManager.addProjectile(projectile);
                     break;
             }
         });
+
+                                    /*Rectangle enemyBounds = new Rectangle(
+                                        enemy1.getSpriteView().getBoundsInParent().getMinX(),
+                                        enemy1.getSpriteView().getBoundsInParent().getMinY(),
+                                        enemy1.getSpriteView().getBoundsInParent().getWidth(),
+                                        enemy1.getSpriteView().getBoundsInParent().getHeight()
+                                    );
+                                    enemyBounds.setStroke(Color.BLUE);
+                                    enemyBounds.setFill(Color.TRANSPARENT);
+                                    root.getChildren().add(enemyBounds);*/
 
         scene.setOnKeyReleased(event -> {
             switch (event.getCode()) {
@@ -94,31 +119,38 @@ public class WizardsAreFun extends Application {
                 player1.updatePosition(scene); 
                 
                 // Move projectiles
-                for (int i = 0; i < projectiles.size(); i++) {
-                    Projectile p = projectiles.get(i);
+                for (int i = 0; i < gameManager.getProjectiles().size(); i++) {
+                    Projectile p = gameManager.getProjectiles().get(i);
                     p.move();
 
                     // Remove if out of bounds
                     if (p.isOutOfBounds(scene)) {
-                        root.getChildren().remove(p.getSprite());
-                        projectiles.remove(i);
+                        gameManager.removeProjectile(p);
                         i--; // Adjust index after removal
                     }
                 }
                 
                 // Move enemies toward player
-                for (Enemy enemy : enemies) {
+                for (Enemy enemy : gameManager.getEnemies()) {
                     enemy.moveTowardPlayer(player1, scene); // Chasing behavior
                 }
                 
                 // Damage and Collision handling
-                for (Projectile projectile : projectiles) {
-                    for (Enemy enemy : enemies) {
-                        if (projectile.getSprite().getBoundsInParent().intersects(enemy.getSpriteView().getBoundsInParent())) {
+                for (Iterator<Projectile> projectileIterator = gameManager.getProjectiles().iterator(); projectileIterator.hasNext(); ) {
+                    Projectile projectile = projectileIterator.next();
+                    for (Enemy enemy : gameManager.getEnemies()) {
+                        // Check if the hitboxes intersect
+                        double dx = projectile.getHitbox().getCenterX() - enemy.getHitbox().getCenterX();
+                        double dy = projectile.getHitbox().getCenterY() - enemy.getHitbox().getCenterY();
+                        double distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < projectile.getHitbox().getRadius() + enemy.getHitbox().getRadius()) {
                             enemy.takeDamage(1); // Apply damage
-                            root.getChildren().remove(projectile.getSprite()); // Remove projectile
-                            projectiles.remove(projectile);
-                            break;
+
+                            // Remove projectile safely using the iterator
+                            projectileIterator.remove();
+                            gameManager.removeProjectile(projectile); // Keep game manager state consistent
+                            break; // Exit inner loop after collision
                         }
                     }
                 }

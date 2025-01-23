@@ -4,6 +4,7 @@
  */
 package Model;
 
+import Controller.GameManager;
 import java.io.File;
 import java.util.Map;
 import java.util.Random;
@@ -12,6 +13,7 @@ import javafx.animation.Timeline;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
 /**
@@ -33,10 +35,14 @@ public class Enemy {
     private Timeline deathTimeline;
     private Map<String, Image[]> walkingAnimation;
     private Map<String, Image[]> deathAnimation;
+    
+    private GameManager gameManager;
+    
+    private Circle hitbox;
 
     public Enemy(String[] upWalkFrames, String[] downWalkFrames, String[] rightWalkFrames, 
             String[] upDieFrames, String[] downDieFrames, String[] rightDieFrames, 
-            double startX, double startY, int health, double speed) {
+            double startX, double startY, int health, double speed, GameManager gameManager) {
         this.spriteView = new ImageView(new Image(new File(downWalkFrames[0]).toURI().toString()));
         this.spriteView.setX(startX);
         this.spriteView.setY(startY);
@@ -44,6 +50,10 @@ public class Enemy {
         this.spriteView.setFitHeight(48);
         this.health = health;
         this.speed = speed;
+        this.gameManager = gameManager;
+        
+        // Create a hitbox (e.g., radius 20)
+        hitbox = new Circle(startX + spriteView.getFitWidth() / 2, startY + spriteView.getFitHeight() / 2, 20);
         
         walkingAnimation = Map.of(
             "UP", new Image[] {
@@ -184,6 +194,10 @@ public class Enemy {
         if (newY >= 0 && newY <= scene.getHeight() - spriteView.getFitHeight()) {
             spriteView.setY(newY);
         }
+        
+        // Update the hitbox position to match the sprite
+        hitbox.setCenterX(spriteView.getX() + spriteView.getFitWidth() / 2);
+        hitbox.setCenterY(spriteView.getY() + spriteView.getFitHeight() / 2);
     }
 /*
     private void initializeMovement() {
@@ -198,6 +212,10 @@ public class Enemy {
         movementTimeline.setCycleCount(Timeline.INDEFINITE);
         movementTimeline.play();
     }*/
+    
+    public Circle getHitbox() {
+        return hitbox;
+    }
     
     private void startAnimation() {
         movementTimeline = new Timeline(
@@ -222,10 +240,10 @@ public class Enemy {
             })
         );
         deathTimeline.setCycleCount(deathAnimation.get(facingDirection).length);
-        /*deathTimeline.setOnFinished(event -> {
-            enemies.remove(this);
-            gamePane.getChildren().remove(spriteView);
-        });*/
+        deathTimeline.setOnFinished(event -> {
+            gameManager.removeEnemy(this);
+            //gamePane.getChildren().remove(spriteView);
+        });
         deathTimeline.play();
     }
 
