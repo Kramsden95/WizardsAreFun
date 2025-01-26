@@ -27,16 +27,19 @@ public class Projectile {
     private int currentFrameIndex = 0;
     
     private Circle hitbox;
+    
+    private Player shooter; // Reference to the player who fired the projectile
 
-    public Projectile(double startX, double startY, String facingDirection, String[] animationPaths) {
+    public Projectile(double startX, double startY, String facingDirection, String[] animationPaths, Player shooter) {
         sprite = new ImageView(new Image(new File(animationPaths[0]).toURI().toString()));
         sprite.setX(startX);
         sprite.setY(startY);
         sprite.setFitWidth(50); 
         sprite.setFitHeight(50);
+        this.shooter = shooter;
         
-        // Create a hitbox (e.g., radius 15)
-        hitbox = new Circle(startX + sprite.getFitWidth() / 2, startY + sprite.getFitHeight() / 2, 15);
+        // Create a hitbox
+        hitbox = new Circle(startX + sprite.getFitWidth() / 2, startY + sprite.getFitHeight() / 2, 10);
         
         // Load animation frames
         Image[] animationFrames = new Image[animationPaths.length];
@@ -52,7 +55,7 @@ public class Projectile {
             case "RIGHT": velocityX = speed; velocityY = 0; sprite.setRotate(0); break;
         }
 
-        // Set up animation
+        // Set up animation timeline for the projectile
         animationTimeline = new Timeline(
             new KeyFrame(Duration.millis(20), event -> {
                 currentFrameIndex = (int) ((currentFrameIndex + 1) % animationFrames.length);
@@ -70,7 +73,14 @@ public class Projectile {
     public Circle getHitbox() {
         return hitbox;
     }
+    
+    public Player getShooter() {
+        return shooter;
+    }
 
+    /**
+     * Moves the projectile based on its velocity.
+     */
     public void move() {
         sprite.setX(sprite.getX() + velocityX);
         sprite.setY(sprite.getY() + velocityY);
@@ -80,6 +90,9 @@ public class Projectile {
         hitbox.setCenterY(sprite.getY() + sprite.getFitHeight() / 2);
     }
 
+    /**
+     * Checks if the projectile is out of bounds of the given scene.
+     */
     public boolean isOutOfBounds(Scene scene) {
         return sprite.getX() < 0 || sprite.getX() > scene.getWidth() ||
                sprite.getY() < 0 || sprite.getY() > scene.getHeight();
