@@ -28,7 +28,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -93,7 +92,7 @@ public class WizardsAreFun extends Application {
     private Button buttonRight;
     private Button buttonSpace;
     
-    private double spawnInterval = 5.0; // Initial spawn interval (seconds)
+    private double spawnInterval = 3.0; // Initial spawn interval (seconds)
     private double timeSinceLastSpawn = 0.0; // Time since the last enemy was spawned
     private double gameTime = 0.0; // Total elapsed game time
     private long lastUpdateTime = 0; // Used to calculate delta time
@@ -546,11 +545,14 @@ public class WizardsAreFun extends Application {
                 
                 // Spawn enemies based on the current interval
                 if (timeSinceLastSpawn >= spawnInterval) {
-                    gameManager.spawnEnemy();
+                    int numberOfEnemiesToSpawn = 1 + (int) (gameTime / 500_000_000.0); // Spawn more enemies as time progresses
+                    for (int i = 0; i < numberOfEnemiesToSpawn; i++) {
+                        gameManager.spawnEnemy();
+                    }
                     timeSinceLastSpawn = 0.0; // Reset the timer
 
                     // Gradually increase spawn rate over time
-                    if (gameTime % 30 == 0) { // Every 30 seconds
+                    if (gameTime % 10 == 0) { // Every 30 seconds
                         spawnInterval = Math.max(1.0, spawnInterval - 0.1); // Don't go below 1 second
                         System.out.println("Spawn interval decreased to: " + spawnInterval);
                     }
@@ -916,7 +918,7 @@ public class WizardsAreFun extends Application {
     backgroundMusicPlayer = new MediaPlayer(backgroundMusic);
 
     // Set the volume to a lower level
-    backgroundMusicPlayer.setVolume(0.1);
+    backgroundMusicPlayer.setVolume(0.8);
 
     // Loop the music indefinitely
     backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);

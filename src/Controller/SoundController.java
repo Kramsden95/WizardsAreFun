@@ -17,7 +17,7 @@ public class SoundController {
         try {
             Media sound = new Media(new File(soundFilePath).toURI().toString());
             MediaPlayer mediaPlayer = new MediaPlayer(sound);
-            mediaPlayer.setVolume(0.1);
+            mediaPlayer.setVolume(0.8);
             mediaPlayer.play();
         } catch (Exception e) {
             System.err.println("Error playing sound: " + e.getMessage());
