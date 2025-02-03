@@ -175,9 +175,9 @@ public class Logica {
     // Character B sprite frames
     private String[] CharacterBIdleUP = {
         "src/Media/CharacterB/CharacterB_idle_UP_00.png",
-        "src/Media/CharacterA/CharacterB_idle_UP_01.png",
-        "src/Media/CharacterA/CharacterB_idle_UP_02.png",
-        "src/Media/CharacterA/CharacterB_idle_UP_03.png"
+        "src/Media/CharacterB/CharacterB_idle_UP_01.png",
+        "src/Media/CharacterB/CharacterB_idle_UP_02.png",
+        "src/Media/CharacterB/CharacterB_idle_UP_03.png"
     };
     
     private String[] CharacterBIdleDOWN = {
